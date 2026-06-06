@@ -3,22 +3,19 @@ FROM paketobuildpacks/ubuntu-noble-run:latest
 USER root
 
 # 必要なパッケージをインストール
-RUN apt-get update && apt-get install -y \
-    locales \
-    subversion \
-    unzip \
-    curl zip unzip
+RUN apt-get update && apt-get install -y wget
 
-ARG JAVA25_VERSION=25-open
+# JREのインストールバージョンを指定
+ARG JRE_FULL_VERSION=25.0.3+11
+ARG JRE_VERSION=${JRE_FULL_VERSION%+*}
 
-# SDKMANをインストールして、sdkコマンドでjavaをインストールする
-RUN curl -s "https://get.sdkman.io" | bash && \
-    bash -c "source ${HOME}/.sdkman/bin/sdkman-init.sh && sdk install java ${JAVA25_VERSION}" && \
-    cp -rp ${HOME}/.sdkman/candidates/java /
+# JREインストール(GitHubのLibericaからダウンロードして解凍)
+RUN wget https://github.com/bell-sw/Liberica/releases/download/${JRE_FULL_VERSION}/bellsoft-jre${JRE_FULL_VERSION}-linux-amd64.tar.gz && \
+    tar -zxvf bellsoft-jre${JRE_FULL_VERSION}-linux-amd64.tar.gz
 
 USER cnb
 
-ENV JAVA_HOME=/java/${JAVA25_VERSION}
+ENV JAVA_HOME=/jre-${JRE_VERSION}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
 
 # 動作確認用のコマンド実行
